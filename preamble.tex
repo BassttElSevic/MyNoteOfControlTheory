@@ -138,13 +138,17 @@
 \definecolor{nm}{HTML}{E8933A}        % 行号
 \lstset{
   basicstyle=\ttfamily\small,
-  keywordstyle=\color{kw}\bfseries,
+  keywordstyle=\color{kw}\bfseries,   % 关键词变色加粗
   stringstyle=\color{st},
   commentstyle=\color{cm}\itshape,
-  numberstyle=\color{nm}\tiny,
-  numbers=left, numbersep=6pt,
-  showstringspaces=false, breaklines=true, tabsize=2,
-  frame=none,
+  identifierstyle=\color{black},
+  numberstyle=\color{nm}\small,      % 行号加大
+  numbers=left, numbersep=8pt,
+  breaklines=true, breakatwhitespace=false,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false, tabsize=2,
+  extendedchars=true, frame=none,
+  xleftmargin=2pt, xrightmargin=2pt,
 }
 % listings 不带内置的 latex 语言，自定义一个；常见命令可高亮
 \lstdefinelanguage{latex}{%
@@ -163,7 +167,7 @@
   listing options={language=#1},
   colback=codebg, colframe=codeframe, leftrule=3pt,
   colbacktitle=bl!80!black, coltitle=white, fonttitle=\bfseries,
-  arc=2mm, boxrule=0.5pt,
-  left=6pt, right=6pt, top=4pt, bottom=4pt,
+  arc=0pt, boxrule=0.5pt,          % 直角，不要圆角
+  left=8pt, right=8pt, top=6pt, bottom=6pt,
   title={#2},
 }
