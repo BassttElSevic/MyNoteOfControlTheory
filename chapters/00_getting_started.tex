@@ -1,192 +1,698 @@
 % !TEX root = ../main.tex
 
 % ============================================================
-%   第零章：如何记笔记
-%   这一章本身就是一份「使用说明」，讲清楚模板里有什么、怎么用，
-%   从文字、公式、插图、TikZ，到各色知识块（彩色框）和常用命令。
+%   第零章：怎么用这套模板记笔记
+%   写给第一次接触 LaTeX 的人。每节都先「展示效果」再「给出源码」。
 % ============================================================
 
-\chapter{如何记笔记}
+\chapter{怎么用这套模板记笔记}
 \label{ch:start}
 
-这一章先带你熟悉这套模板：改哪、写哪、怎么用现成的环境，让你不用每次都写一堆参数。
+这套笔记用 \LaTeX 写，编译成 PDF。这一章把「从头到尾怎么用」讲清楚。\textbf{每一节都分两部分}：先给效果（这一章里真实渲染出来的样子），再给能复制出这个效果的源码。
 
-\section{写作流程}
+\section{先理解：源文件与成品}
+
+你在 \texttt{.tex} 里写的不是最终样子，而是「怎么排版」的指令。写完要编译，才得到 \texttt{main.pdf}。
+
+\begin{notebox}[bl]{核心循环}
+改 \texttt{.tex} → 编译（\texttt{\textbackslash ll}）→ 看 \texttt{main.pdf}（\texttt{\textbackslash lv}）。
+\end{notebox}
+
+\section{编译与查看（\texttt{\textbackslash ll}）}
+
+\subsection{写笔记的动作只有三步}
 
 \begin{enumerate}
-  \item 打开 \texttt{main.tex}，按 \texttt{\textbackslash ll} 开始连续编译（latexmk + XeLaTeX）。
-  \item 按 \texttt{\textbackslash lv} 打开 PDF 并跳到光标处（Zathura）。写一行、看一行。
-  \item Zathura 里 \texttt{Ctrl + 左键} 反向跳回源码（靠 Synctex）。
+  \item 在 nvim 里打开 \texttt{main.tex}，按 \texttt{\textbackslash ll} 编译。\texttt{\textbackslash ll} 是连续编译：你保存一次它自动重编一次。
+  \item 按 \texttt{\textbackslash lv} 打开 \texttt{main.pdf}（Zathura），光标跳到你源码所在处。
+  \item 在 Zathura 里 \texttt{Ctrl + 左键} 点 PDF，跳回源码对应行（反向跳转）。
 \end{enumerate}
 
-\section{目录与文件结构}
+\subsection{按 \texttt{\textbackslash ll} 之后发生了什么}
 
-用 \texttt{codebox} 展示目录（长行会自动换行，不会溢出边框）：
-\begin{codebox}[text]{目录结构}
+\begin{itemize}
+  \item 辅助文件（\texttt{.aux}、\texttt{.log}、\texttt{.toc}、\texttt{.synctex}）写进 \texttt{build/}。
+  \item \texttt{main.pdf} 写在项目根目录，紧挨 \texttt{main.tex}。
+  \item 目录/引用要靠 \textbf{编两遍} 才正确。
+\end{itemize}
+
+\section{vimtex 快捷键与这套配置改了啥}
+
+\subsection{vimtex 的按键}
+
+\texttt{vimtex} 用 \texttt{<localleader>}（这里是 \textbackslash）开头的按键管编译。常用的几个：
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{ll}
+    \toprule
+    按键 & 作用 \\
+    \midrule
+    \texttt{\textbackslash ll} & 开始/停止连续编译（latexmk）\\
+    \texttt{\textbackslash lv} & 打开 PDF 并跳到光标处（zathura）\\
+    \texttt{\textbackslash lc} & 清理辅助文件 \\
+    \texttt{\textbackslash le} & 查看编译错误 \\
+    \texttt{\textbackslash lt} & 章节/目录 \\
+    \texttt{\textbackslash li} & 编译信息 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+最常用就是 \texttt{\textbackslash ll}（编译）和 \texttt{\textbackslash lv}（看 PDF）。
+
+\subsection{这套配置在 nvim 里改了什么}
+
+配置文件在 \texttt{\textasciitilde/.config/nvim/lua/plugins/latex.lua}，主要几处：
+
+\begin{itemize}
+  \item \textbf{编译器用 \texttt{latexmk}}：自动跑多遍、处理 \texttt{\textbackslash bibliography} 等。
+  \item \textbf{默认引擎是 \texttt{xelatex}}：为了中文。
+        \texttt{pdflatex} 处理不了中文字符；用 \texttt{xelatex} 才有 \texttt{fontspec} 字库。
+        想单独某个文件用 pdflatex，在文件头写 \texttt{\% !TEX program = pdflatex}。
+  \item \textbf{辅助文件进 \texttt{build/}}：\texttt{aux\_dir = "build"}，源码目录只留 \texttt{.tex} \textbf{和} \texttt{main.pdf}。
+  \item \textbf{PDF 留在源码旁}：\texttt{out\_dir = ""}，方便 \texttt{\textbackslash lv}。
+  \item \textbf{阅读器用 \texttt{zathura\_simple}}：支持 SyncTeX 正反向跳转，且不依赖 X11 的 \texttt{xdotool}（本机是 Wayland）。
+  \item \textbf{补全和诊断交给 \texttt{texlab}}（LSP）：关闭了 vimtex 自己的补全（\texttt{vimtex\_complete\_enabled=0}）和诊断队列，避免重复。
+  \item \textbf{texlab 编译手动触发}：\texttt{onSave = false}，不每次保存都编（大文档慢），要编用 \texttt{:LspTexlabBuild}。
+  \item \textbf{chktex 静态检查}：打开和保存时跑，在你写的时候顺手查语法/标点问题。
+\end{itemize}
+
+\begin{notebox}[og]{想改这些}
+这些都是 \texttt{~/.config/nvim/lua/plugins/latex.lua} 里的 \texttt{vim.g.vimtex\_* } 变量，改那一个文件即可，跟笔记 \texttt{.tex} 无关。
+\end{notebox}
+
+\section{这套模板的文件}
+
+\begin{codebox}[text]{项目结构}
 MyNoteOfControlTheory/
-├── main.tex              # 主文档：class + 封面 + \include 章节
-├── preamble.tex          # 导言区：字体、配色、页面、知识块宏
-├── chapters/             # 各章节 .tex
+├── main.tex        # 主文档：文档类、封面、\include 各章节
+├── preamble.tex    # 导言区：字体、配色、页面、知识块宏、代码框宏
+├── chapters/       # 各章节 .tex
 │   └── 00_getting_started.tex
-├── images/               # 外部图片
-├── build/                # 辅助文件（自动生成，已 gitignore）
-├── main.pdf              # 编译产物（在根目录）
+├── images/         # 外部图片
+├── build/          # 辅助文件（自动生成，已 gitignore）
+├── main.pdf        # 编译成品（根目录）
 ├── .gitignore
 └── README.md
 \end{codebox}
 
-\subsection{新增一个章节}
+\textbf{你平时只动 \texttt{main.tex} 和 \texttt{chapters/}。} 全局样式（字体、颜色、页面、框）去 \texttt{preamble.tex} 改。
 
-\begin{enumerate}
-  \item 复制 \texttt{chapters/00\_getting\_started.tex} 为 \texttt{chapters/NN\_名字.tex}。
-  \item 首行保留 \texttt{\% !TEX root = ../main.tex}（告诉 vimtex 主文件在哪）。
-  \item 在 \texttt{main.tex} 正文区加一行 \texttt{\textbackslash include\{chapters/NN\_名字\}}。
-\end{enumerate}
+\section{LaTeX 基本概念}
+
+\begin{itemize}
+  \item \textbf{命令}：反斜杠开头，如 \texttt{\textbackslash section}。
+  \item \textbf{参数}：命令可带，放 \texttt{\{\}} 里，如 \texttt{\textbackslash textbf\{粗体\}}。
+  \item \textbf{环境}：\texttt{\textbackslash begin\{名\}} 与 \texttt{\textbackslash end\{名\}} 包住一段内容。
+  \item \textbf{注释}：\texttt{\%} 及其后整行不编译。
+  \item \textbf{段落}：一个空行 = 分段。
+\end{itemize}
 
 \section{文字排版}
 
+\subsection{效果}
+
+\textbf{这行加粗。}  \textit{这行斜体（中文变成楷体）。}  \emph{这行强调。}  \texttt{这行等宽字体。}
+
+\subsection{源码}
+
+\begin{codebox}[latex]{文字样式}
+\textbf{粗体}          % \textbf
+\textit{斜体=楷体}     % \textit（中文自动成楷体）
+\emph{强调}            % \emph
+\texttt{等宽字体}      % \texttt
+\end{codebox}
+
+\begin{notebox}[tl]{中文斜体说明}
+中文没有传统意义上的斜体，按国内习惯用\textbf{楷体}代替。这套模板已配好：写 \texttt{\textbackslash textit\{某句\}}，出来就是楷体，无需额外设置。
+\end{notebox}
+
+\subsection{标题层级}
+
+\subsubsection*{这一层是 subsubsection}
+
+\subsubsection*{它是怎么写的}
+
+\begin{codebox}[latex]{标题命令}
+\chapter{章标题}        % 第一章最顶
+\section{节标题}
+\subsection{小节标题}
+\subsubsection{小小节标题}
+\end{codebox}
+
+一个 \texttt{.tex} 文件只能有一个 \texttt{\textbackslash chapter}，下面可以有很多 \texttt{\textbackslash section} 及更小的标题。编号（第零章、0.1、0.1.1）是自动排的。
+
+\section{列表}
+
+\subsection{效果}
+
+无序列表：
+
 \begin{itemize}
-  \item 粗体：\verb|\textbf{粗体文字}|
-  \item 中文斜体（会变成楷体）：\verb|\textit{楷体文字}|，效果：\textit{楷体文字}
-  \item 强调：\verb|\emph{强调文字}|，效果：\emph{强调文字}
-  \item 等宽 / 代码：\verb|\texttt{latexmk -xelatex}|
-  \item 一级标题：\verb|\section{标题}|
-  \item 二级标题：\verb|\subsection{小标题}|
-  \item 三级标题：\verb|\subsubsection{小小标题}|
+  \item 第一项
+  \item 第二项
 \end{itemize}
 
-\begin{notebox}[bl]{小技巧}
-中文的「斜体」按国内惯例就是用\textbf{楷体}。导言区已把 CJK 斜体映射成霞鹜文楷，
-所以你写 \verb|\textit{某某}| 看到的直接就是楷体，不用额外操心。
-\end{notebox}
+有序列表：
+
+\begin{enumerate}
+  \item 第一步
+  \item 第二步
+\end{enumerate}
+
+\subsection{源码}
+
+\begin{codebox}[latex]{列表}
+% 无序
+\begin{itemize}
+  \item 第一项
+  \item 第二项
+\end{itemize}
+% 有序
+\begin{enumerate}
+  \item 第一步
+  \item 第二步
+\end{enumerate}
+\end{codebox}
 
 \section{数学公式}
 
-行内公式用 \verb|$...$|，例如 $G(s) = C(sI - A)^{-1}B$。
-独立公式用 \verb|equation|，多行推导用 \verb|align|，互相引用用 \verb|\label| 与 \verb|\ref|。
+\subsection{行内公式}
+
+效果：设 $G(s)$ 是传递函数，$s$ 是复变量，输入是 $u$，输出是 $y$。
+
+源码：\texttt{\textbackslash textbf\{设\} \$G(s)\$ 是传递函数}。
+
+\subsection{独立公式（带编号）}
 
 \begin{equation}
-\label{eq:laplace}
-  \mathcal{L}\{f(t)\} \;=\; \int_{0}^{\infty} f(t)\, e^{-st}\,\mathrm{d}t
+  G(s) \;=\; C\,(sI - A)^{-1}B
+  \label{eq:cs}
 \end{equation}
 
-引用公式见式~\eqref{eq:laplace}；行间公式还可用 \verb|\[...\]| 或 \verb|displaymath|。
+\begin{codebox}[latex]{独立公式（带编号）}
+\begin{equation}
+  G(s) = C\,(sI - A)^{-1}B
+  \label{eq:cs}
+\end{equation}
+\end{codebox}
 
-\section{插图}
+\texttt{equation} 自动编号，编号是「章.序」（如 0.1、0.2）。
 
-\subsection{TikZ 直接画（推荐，可编译、可排版、不依赖外图）}
+\subsection{独立公式（不带编号）}
 
-在 \texttt{preamble.tex} 已加载 \texttt{tikz} 和常用库（\texttt{arrows.meta}、\texttt{positioning}、\texttt{calc}、\texttt{shapes.geometric}），直接 \verb|tikzpicture| 即可。
+\[ G(s) \;=\; \frac{Y(s)}{U(s)} \]
+
+源码：\texttt{\textbackslash[\ G(s) = \textbackslash frac\{Y(s)\}\{U(s)\}\ \textbackslash]}，或用 \texttt{\textbackslash [ ... \textbackslash ]}。
+
+\subsection{多行公式}
+
+\begin{align}
+  \dot{x} &= Ax + Bu \\
+  y      &= Cx + Du
+\end{align}
+
+\begin{codebox}[latex]{多行推导}
+\begin{align}
+  \dot{x} &= Ax + Bu \\
+  y      &= Cx + Du
+\end{align}
+\end{codebox}
+
+\subsection{常用符号}
+
+这段是渲染出来的：$x^n$　$a_1$　$\frac{a}{b}$　$\sqrt{x}$　$\sum_{i=1}^{n} i$　$\int_0^\infty f(t)\,\mathrm{d}t$　$\alpha\ \beta\ \omega\ \sigma\ \Delta$
+
+\begin{codebox}[latex]{常用符号}
+上标 $x^n$     下标 $a_1$
+分式 \frac{a}{b}   根式 \sqrt{x}
+求和 \sum_{i=1}^{n} i   积分 \int_0^\infty f(t)\,dt
+希腊 \alpha \beta \omega \sigma \Delta
+\end{codebox}
+
+\subsection{给公式加标签、引用}
+
+效果：式~\eqref{eq:cs} 是状态空间到传递函数的公式。
+
+源码：公式里写 \texttt{\textbackslash label\{名字\}}，别处写 \texttt{\textbackslash eqref\{名字\}}（自带括号）或 \texttt{\textbackslash ref\{名字\}}。
+
+\section{图片}
+
+\subsection{TikZ：直接在模板里画}
+
+这套模板推荐用 TikZ 画图，不依赖外部图片文件、可编译、可随文移动。模板已加载 \texttt{arrows.meta}、\texttt{positioning}、\texttt{calc}、\texttt{shapes.geometric}。
+
+效果（单位反馈闭环框图）：
 
 \begin{center}
 \begin{tikzpicture}[>=Stealth, node distance=1.6cm]
   \node[draw, circle, minimum size=0.9cm, inner sep=0pt] (sum) at (0,0) {$+$};
   \node[draw, rectangle, minimum width=2.2cm, minimum height=1.1cm] (plant) at (3.4,0) {$G(s)$};
-  \draw[->] (-2.4,0) node[left]{$r$} -- (sum);
+  \draw[->] (-2.4,0) node[left] {$r$} -- (sum);
   \draw[->] (sum) -- (plant);
-  \draw[->] (plant) -- (6.0,0) node[right]{$y$};
-  \draw[->] (6.0,0) -- (6.0,-1.6) node[below, midway, fill=white]{$H(s)$} -| (-1.5,-1.6) -- (sum);
+  \draw[->] (plant) -- (6.0,0) node[right] {$y$};
+  \draw[->] (6.0,0) -- (6.0,-1.6) node[below, midway, fill=white] {$H(s)$} -| (-1.5,-1.6) -- (sum);
 \end{tikzpicture}
 \end{center}
 
-要带编号和标题，用 \texttt{figure} 环境加 \verb|\caption|（代码用 \texttt{codebox}，自动高亮+带框）：
-\begin{codebox}[latex]{带编号的图}
-\begin{figure}[htbp]
-  \centering
-  \begin{tikzpicture}[...]  ...  \end{tikzpicture}
-  \caption{单位反馈闭环框图}
-  \label{fig:loop}
-\end{figure}
+\begin{codebox}[latex]{上面的框图源码}
+\begin{tikzpicture}[>=Stealth, node distance=1.6cm]
+  \node[draw, circle, minimum size=0.9cm] (sum) at (0,0) {$+$};
+  \node[draw, rectangle, minimum width=2.2cm, minimum height=1.1cm]
+        (plant) at (3.4,0) {$G(s)$};
+  \draw[->] (-2.4,0) node[left] {$r$} -- (sum);
+  \draw[->] (sum) -- (plant);
+  \draw[->] (plant) -- (6.0,0) node[right] {$y$};
+  \draw[->] (6.0,0) -- (6.0,-1.6)
+        node[below, midway, fill=white] {$H(s)$} -| (-1.5,-1.6) -- (sum);
+\end{tikzpicture}
+\end{codebox}
+
+\begin{notebox}[tl]{节点命名}
+每个 \texttt{\textbackslash node} 可起名字（写在 \texttt{()}，如 \texttt{(sum)}、\texttt{(plant)}），后面 \texttt{\textbackslash draw} 直接引用名字连线，比硬写坐标方便。
+\end{notebox}
+
+\subsection{TikZ 常用画法（几种够用的）}
+
+\subsubsection{基本图形与文字}
+
+效果：
+
+\begin{center}
+\tikz{
+  \draw (0,0) rectangle (2,1.4);
+  \draw (3,0.7) circle (0.7);
+  \draw (4.8,0.7) ellipse (0.8 and 0.55);
+  \node at (1,0.7) {矩形};
+  \node at (3,0.7) {圆};
+  \node at (4.8,0.7) {椭圆};
+}
+\end{center}
+
+源码：
+
+\begin{codebox}[latex]{基本图形}
+\begin{tikzpicture}
+  \draw (0,0) rectangle (2,1.4);   % 矩形
+  \draw (3,0.7) circle (0.7);        % 圆
+  \draw (4.8,0.7) ellipse (0.8 and 0.55); % 椭圆
+  \node at (1,0.7) {矩形};          % 在坐标处放文字
+  \node at (3,0.7) {圆};
+\end{tikzpicture}
+\end{codebox}
+
+\subsubsection{相对定位（\texttt{positioning} 库）}
+
+不用手算坐标，用 \texttt{right=of}、\texttt{below=of} 让节点互相挨着。效果：
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.2cm]
+  \node[draw] (a) {A};
+  \node[draw, right=of a] (b) {B};
+  \node[draw, below=of b] (c) {C};
+  \draw[->] (a) -- (b);
+  \draw[->] (b) -- (c);
+\end{tikzpicture}
+\end{center}
+
+源码：
+
+\begin{codebox}[latex]{相对定位}
+\begin{tikzpicture}[node distance=1.2cm]
+  \node[draw] (a) {A};
+  \node[draw, right=of a] (b) {B};     % 放在 a 右边
+  \node[draw, below=of b] (c) {C};     % 放在 b 下方
+  \draw[->] (a) -- (b);
+  \draw[->] (b) -- (c);
+\end{tikzpicture}
+\end{codebox}
+
+\subsubsection{箭头样式与颜色}
+
+效果：
+
+\begin{center}
+\tikz{
+  \draw[->] (0,0) -- (2.2,0);
+  \draw[thick,->,blue] (0,0.9) -- (2.2,0.9);
+  \draw[dashed,red] (0,1.8) -- (2.2,1.8);
+}
+\end{center}
+
+源码：
+
+\begin{codebox}[latex]{箭头样式}
+\draw[->] (0,0) -- (2.2,0);            % 普通箭头
+\draw[thick,->,blue] (0,0.9) -- (2.2,0.9); % 加粗 + 蓝色
+\draw[dashed,red] (0,1.8) -- (2.2,1.8);    % 虚线 + 红色
+\end{codebox}
+
+\subsubsection{画函数曲线（一阶阶跃响应）}
+
+控制理论常画响应曲线。效果：
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (0,0) -- (5.2,0) node[right]{$t$};
+  \draw[->] (0,0) -- (0,3) node[left]{$y$};
+  \draw[very thick,blue] plot[smooth,domain=0:4.8] (\x,{2.5*(1-exp(-\x))});
+  \draw[dashed] (0,2.5) -- (4.9,2.5) node[above]{$K$};
+\end{tikzpicture}
+\end{center}
+
+源码：
+
+\begin{codebox}[latex]{函数曲线}
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (0,0) -- (5.2,0) node[right]{$t$};      % 横轴
+  \draw[->] (0,0) -- (0,3) node[left]{$y$};         % 纵轴
+  % plot 画平滑曲线，domain 是 x 范围，\x 是变量
+  \draw[very thick,blue] plot[smooth,domain=0:4.8] (\x,{2.5*(1-exp(-\x))});
+  \draw[dashed] (0,2.5) -- (4.9,2.5) node[above]{$K$}; % 渐近线
+\end{tikzpicture}
+\end{codebox}
+
+\subsubsection{坐标轴与标注}
+
+效果：
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (0,0) -- (4,0) node[right]{$\operatorname{Re}$};
+  \draw[->] (0,0) -- (0,3) node[left]{$\operatorname{Im}$};
+  \fill (1.5,2) circle (2pt) node[above]{$p$};      % 一个点 + 标注
+  \draw[dashed] (0,2) -- (1.5,2);
+  \draw[dashed] (1.5,0) -- (1.5,2);
+\end{tikzpicture}
+\end{center}
+
+源码：
+
+\begin{codebox}[latex]{坐标轴与标注}
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (0,0) -- (4,0) node[right]{$\operatorname{Re}$};
+  \draw[->] (0,0) -- (0,3) node[left]{$\operatorname{Im}$};
+  \fill (1.5,2) circle (2pt) node[above]{$p$};       % 点 + 标注
+  \draw[dashed] (0,2) -- (1.5,2);                    % 虚线投影
+  \draw[dashed] (1.5,0) -- (1.5,2);
+\end{tikzpicture}
 \end{codebox}
 
 \subsection{外部图片}
 
-图片放在 \texttt{images/} 下，用 \texttt{includegraphics}：
-\begin{codebox}[latex]{插图}
-\includegraphics[width=0.6\textwidth]{images/xxx.png}
+先把图片放进 \texttt{images/}，再 \texttt{includegraphics} 插入。
+
+\begin{codebox}[latex]{插入一张图}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/example.png}
+  \caption{图的标题}
+  \label{fig:example}
+\end{figure}
 \end{codebox}
 
-\section{知识块（彩色框）}
+\texttt{width=0.6\textbackslash textwidth} 是图片宽度（正文宽度的六成）。\texttt{\textbackslash caption} 写标题，\texttt{\textbackslash label} 给图起名，之后用 \texttt{\textbackslash ref\{名字\}} 引用它。
 
-所有知识块都定义好了，\textbf{直接用，不用写参数}。它们统一是「饱和色标题条 + 同色左边线 + 极淡底 + 方角」。
+\section{表格}
 
-\subsection{带编号的彩色框}
+\subsection{效果}
 
-用在 \texttt{preamble.tex} 的 \verb|\newcoloredtheorem| 生成，写法统一：
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    名称 & 符号 & 单位 \\
+    \midrule
+    质量 & $m$ & kg \\
+    阻尼 & $c$ & N\,s/m \\
+    \bottomrule
+  \end{tabular}
+  \caption{一个三线表}
+\end{table}
+
+\subsection{源码}
+
+\begin{codebox}[latex]{三线表}
+\begin{tabular}{lcc}
+  \toprule
+  名称 & 符号 & 单位 \\
+  \midrule
+  质量 & $m$ & kg \\
+  阻尼 & $c$ & N\,s/m \\
+  \bottomrule
+\end{tabular}
+\end{codebox}
+
+\texttt{lcc} 是列格式（左对齐、居中、居中）。\texttt{\textbackslash toprule}/\texttt{\textbackslash midrule}/\texttt{\textbackslash bottomrule} 是 booktabs 的三条横线。
+
+\section{彩色知识块}
+
+\textbf{所有知识块的样式都在 \texttt{preamble.tex} 配好，你只填内容，不写样式参数。}
+
+\subsection{带编号的知识块}
+
+写法：\texttt{\textbackslash begin\{环境名\}\{标题\}\{标签\}}。第 1 个参数标题（可写一对空 \texttt{\{\}} 只显示编号），第 2 个是供引用的标签。
+
+效果：
 
 \begin{definition}{单边拉普拉斯变换}{def:laplace}
-用法 \verb|\begin{definition}{标题}{标签} ... \end{definition}|。
+对定义在 $t\ge 0$ 的信号，其拉普拉斯变换为
+\begin{equation}
+  \mathcal{L}\{f(t)\} = \int_0^\infty f(t)\,e^{-st}\,\mathrm{d}t .
+\end{equation}
 \end{definition}
 
-\begin{theorem}{}{thm:main}
-不写标题就只显示编号：\verb|\begin{theorem}{}{标签} ... \end{theorem}|。
+\begin{theorem}{}{thm:central}
+若系统在原点渐近稳定，则对任意正定 $Q$，方程 $A^{\top}P+PA=-Q$ 有唯一正定解 $P$。
 \end{theorem}
 
-已有这些（颜色不同，编号共用「章.序」）：
+\begin{example}{一阶系统阶跃响应}{ex:first}
+对 $G(s)=\dfrac{K}{Ts+1}$，单位阶跃响应为 $y(t)=K(1-e^{-t/T})$。
+\end{example}
 
-\begin{center}
-\small
-\begin{tabular}{lll}
-\hline
-环境名 & 显示名 & 颜色 \\
-\hline
-\texttt{definition} & 定义 & 蓝 \\
-\texttt{theorem}    & 定理 & 红 \\
-\texttt{lemma}      & 引理 & 靛 \\
-\texttt{proposition}& 命题 & 紫 \\
-\texttt{corollary}  & 推论 & 粉 \\
-\texttt{example}    & 例   & 绿 \\
-\texttt{remark}     & 注   & 灰 \\
-\hline
-\end{tabular}
-\end{center}
+写法：\texttt{\textbackslash begin\{环境名\}\{标题\}\{标签\}} ... \texttt{\textbackslash end\{环境名\}}。上面的定义、定理、例就是这么写的。
 
-\subsection{通用彩色块 notebox（无编号）}
+现有类型与颜色：
 
-适合「这一部分研究什么」「要点」「证明思路」这类说明性文字。第一个参数选颜色（可选，默认蓝），第二个是标题。
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    环境名 & 显示名 & 颜色 \\
+    \midrule
+    \texttt{definition} & 定义 & 蓝 \\
+    \texttt{theorem}    & 定理 & 红 \\
+    \texttt{lemma}      & 引理 & 靛 \\
+    \texttt{proposition}& 命题 & 紫 \\
+    \texttt{corollary}  & 推论 & 粉 \\
+    \texttt{example}    & 例   & 绿 \\
+    \texttt{remark}     & 注   & 灰 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{不加编号的 \texttt{notebox}}
+
+效果：
 
 \begin{notebox}[og]{证明思路}
-\verb|\begin{notebox}[og]{证明思路} ... \end{notebox}|
+先找 $T$ 的不变子空间，再做三角化。
 \end{notebox}
 
 \begin{notebox}[pu]{要点}
-\verb|\begin{notebox}[pu]{要点} ... \end{notebox}|
+这是要点框。多行内容之间空一行分段。
 \end{notebox}
 
-可用的颜色代号：\texttt{bl}（蓝）、\texttt{tl}（青）、\texttt{gr}（绿）、\texttt{og}（橙）、\texttt{pu}（紫）、\texttt{rd}（红）、\texttt{in}（靛）、\texttt{pk}（粉）、\texttt{gy}（灰）。
+写法：\texttt{\textbackslash begin\{notebox\}[颜色]\{标题\}} ... \texttt{\textbackslash end\{notebox\}}。方括号选颜色（不写默认蓝），花括号是标题。
 
-\vspace{0.6em}
-\begin{notebox}[gy]{提示}
-想\textbf{加一种新颜色}的框：在 \texttt{preamble.tex} 里
-\verb|\definecolor{你起的名字}{HTML}{十六进制值}|，
-再用 \verb|\newcoloredtheorem{环境名}{显示名}{你起的名字}{标签前缀}| 加一行即可。
-\end{notebox}
+可选颜色：\texttt{bl}（蓝）、\texttt{tl}（青）、\texttt{gr}（绿）、\texttt{og}（橙）、\texttt{pu}（紫）、\texttt{rd}（红）、\texttt{in}（靛）、\texttt{pk}（粉）、\texttt{gy}（灰）。
 
-\section{表格与列表}
+\subsection{自定义一种新颜色、新知识块}
 
-表格用 \texttt{booktabs}（已加载）：
-\begin{codebox}[latex]{表格}
-\begin{tabular}{lll}
-\hline
-x & y & z \\ \hline
-1 & 2 & 3 \\
-\hline
-\end{tabular}
+效果、源码：
+
+\begin{codebox}[latex]{新增一种知识块}
+% 在 preamble.tex 里：
+\definecolor{青}{HTML}{1F9B8E}
+\newcoloredtheorem{styling}{风格}{青}{sty}
 \end{codebox}
 
-列表用 \texttt{enumerate}（有序）和 \texttt{itemize}（无序），已在导言区调好了紧凑间距。
+注册后就能 \texttt{\textbackslash begin\{styling\}\{标题\}\{标签\}}。第 3 个参数是颜色名，第 4 个是标签前缀。
 
-\section{超链接与引用}
+\section{插入代码块（\texttt{codebox}）}
+
+\texttt{codebox} 自动加行号、高亮关键字、自动断行。语法：\texttt{\textbackslash begin\{codebox\}\ [语言]\{标题\}}。
+
+效果：
+
+\begin{codebox}[bash]{编译命令}
+latexmk -xelatex -synctex=1 -auxdir=build main.tex
+\end{codebox}
+
+支持\textbf{多种语言}（\texttt{bash}、\texttt{latex}、\texttt{text}、\texttt{c}、\texttt{python}、\texttt{matlab} 等），每种都会自动高亮\textbf{关键字（蓝）、字符串（绿）}，注释会显示成灰字。
+
+\begin{codebox}[text]{可选语言（方括号里填名字）}
+bash              shell 脚本
+latex / tex       LaTeX 源码
+text              无高亮（目录、说明）
+C  c / python / matlab
+\end{codebox}
+
+\section{如何新增一个章节}
+
+\begin{enumerate}
+  \item 复制 \texttt{chapters/00\_getting\_started.tex} 为 \texttt{chapters/NN\_名字.tex}。
+  \item 文件首行保留 \texttt{\% !TEX root = ../main.tex}；把 \texttt{\textbackslash chapter\{名字\}} 改成新名。
+  \item 在 \texttt{main.tex} 正文区加一行 \texttt{\textbackslash include\{chapters/NN\_名字\}}。
+\end{enumerate}
+
+\begin{codebox}[latex]{在 main.tex 里登记}
+\mainmatter
+\include{chapters/00_getting_started}   % 已有
+\include{chapters/01_statespace}        % 新加
+\end{codebox}
+
+\textbf{章节顺序}由 \texttt{\textbackslash include} 的先后决定。
+
+\section{我们配好的宏与环境（重点）}
+
+下面这些都是在 \texttt{preamble.tex} 里配好的\textbf{宏/环境}，你只填内容，\textbf{一个样式参数都不用写}。
+
+\subsection{带编号的彩色框（定义/定理/例…）}
+
+\textbf{效果}：
+
+\begin{proposition}{能控性的秩判据}{prop:rank}
+系统 $(A,B)$ 能控，当且仅当能控性矩阵 $\mathcal{C}=[B\; AB\; \dots\; A^{n-1}B]$ 满秩。
+\end{proposition}
+
+\begin{corollary}{}{cor:rank}
+当 $\mathcal{C}$ 行满秩时，可以通过状态反馈任意配置极点。
+\end{corollary}
+
+\begin{codebox}[latex]{这类框的写法}
+% 有标题：{标题}{标签}
+\begin{proposition}{标题}{标签}  内容 \end{proposition}
+% 不写标题：只显示编号
+\begin{corollary}{}{标签}  内容 \end{corollary}
+\end{codebox}
+
+可用的名字：\texttt{definition}(定义) \texttt{theorem}(定理) \texttt{lemma}(引理) \texttt{proposition}(命题) \texttt{corollary}(推论) \texttt{example}(例) \texttt{remark}(注)。
+
+\subsection{notebox：不加编号的彩框}
+
+\textbf{效果}：
+
+\begin{notebox}[gr]{这一部分解决什么}
+适合放「这一段要讲什么」「一个要点」「一段提示」。方括号选颜色，不写默认蓝。
+\end{notebox}
+
+\begin{codebox}[latex]{notebox 写法}
+\begin{notebox}[gr]{标题}  内容  \end{notebox}
+% 不写颜色=蓝：\begin{notebox}{标题}...\end{notebox}
+\end{codebox}
+
+\subsection{codebox：代码块}
+
+\textbf{效果}：
+
+\begin{codebox}[latex]{一段 LaTeX 源码}
+\begin{equation}\label{eq:demo}
+  F(s) = \mathcal{L}\{f(t)\}
+\end{equation}
+\end{codebox}
+
+写法：\texttt{\textbackslash begin\{codebox\}}\texttt{[语言]}\texttt{\{标题\}} ... \texttt{\textbackslash end\{codebox\}}。第一个参数是语言，第二个是标题。
+
+\subsection{自定义一种新颜色、新框}
+
+\textbf{在 \texttt{preamble.tex} 里加两行}：
+
+\begin{codebox}[latex]{新增一种框}
+\definecolor{青}{HTML}{1F9B8E}                 % 1. 定义颜色
+\newcoloredtheorem{styling}{风格}{青}{sty}      % 2. 注册成新环境
+\end{codebox}
+
+之后就能 \texttt{\textbackslash begin\{styling\}\{标题\}\{标签\}}。\texttt{\textbackslash newcoloredtheorem} 第 1 参数=环境名，第 2=显示名，第 3=颜色名，第 4=标签前缀。
+
+
+\subsection{颜色代号对照}
+
+\begin{codebox}[text]{可用颜色（notebox 的方括号里填）}
+bl=蓝   tl=青   gr=绿   og=橙   pu=紫
+rd=红   in=靛   pk=粉   gy=灰
+\end{codebox}
+
+\subsection{宏速查表}
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    宏 / 环境 & 作用 & 用法 \\
+    \midrule
+    \texttt{definition} 等 & 带编号彩框 & \texttt{\textbackslash begin\{环境\}\{标题\}\{标签\}} \\
+    \texttt{notebox} & 无编号彩框 & \texttt{\textbackslash begin\{notebox\}[颜色]\{标题\}} \\
+    \texttt{codebox} & 代码高亮框 & \texttt{\textbackslash begin\{codebox\}[语言]\{标题\}} \\
+    \texttt{\textbackslash newcoloredtheorem} & 新增一种框 & \texttt{（写在 preamble.tex）} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+\section{想改样式、改封面去哪}
 
 \begin{itemize}
-  \item 外部链接：\verb|\href{URL}{显示文字}|
-  \item 章节引用：\verb|\ref{ch:start}|，效果见第~\ref{ch:start} 章。
-  \item 交叉引用用的是 \verb|\label{...}| + \verb|\ref{...}|。
+  \item 字体 / 配色 / 页面 / 标题字号 / 框样式：都在 \texttt{preamble.tex}。
+  \item 封面：\texttt{main.tex} 的 \texttt{\textbackslash begin\{titlepage\}}，TikZ 精确定位，改标题、作者、GitHub 链接都在那。
 \end{itemize}
 
-\section{补充}
+\section{常用命令速查}
 
-\begin{notebox}[tl]{想换风格}
-- 字体、配色、页面、框，全部集中在 \texttt{preamble.tex}，改它就行。
-- 封面在 \texttt{main.tex} 的 \texttt{titlepage} 里（TikZ 精确定位），想改标题文字或作者直接改那里的节点。
+这一节把上面用到的命令都列一遍，方便随时翻。分组如下：
+
+\subsection{标题层级}
+
+\texttt{\textbackslash chapter}（章） / \texttt{\textbackslash section}（节） / \texttt{\textbackslash subsection}（小节） / \texttt{\textbackslash subsubsection}（小小节）。
+
+\subsection{文字样式}
+
+\texttt{\textbackslash textbf\{…\}}（加粗） / \texttt{\textbackslash textit\{…\}}（斜体\,=楷体） / \texttt{\textbackslash emph\{…\}}（强调） / \texttt{\textbackslash texttt\{…\}}（等宽）。
+
+\subsection{列表}
+
+\texttt{itemize}（无序） / \texttt{enumerate}（有序），条目用 \texttt{\textbackslash item}。
+
+\subsection{数学}
+
+行内 \texttt{\$…\$}；独立公式 \texttt{equation}（带编号）、\texttt{\textbackslash[}…\texttt{\textbackslash]}（不带编号）；多行 \texttt{align}；\texttt{\textbackslash frac}、\texttt{\textbackslash sqrt}、\texttt{\textbackslash sum}、\texttt{\textbackslash int}；\texttt{\textbackslash alpha} 等希腊字母。
+
+\subsection{插图}
+
+\texttt{includegraphics}（插外部图） / \texttt{tikzpicture}（TikZ 画图）；配 \texttt{figure} 环境、\texttt{\textbackslash caption}、\texttt{\textbackslash label}。
+
+\subsection{表格}
+
+\texttt{tabular}，三线用 \texttt{\textbackslash toprule} / \texttt{\textbackslash midrule} / \texttt{\textbackslash bottomrule}。
+
+\subsection{引用与文件}
+
+\texttt{\textbackslash label}（起名） / \texttt{\textbackslash ref} / \texttt{\textbackslash eqref}（引用）；\texttt{\textbackslash input}（并入） / \texttt{\textbackslash include}（含章节）。
+
+\subsection{本模板的环境}
+
+\texttt{definition}、\texttt{theorem}、\texttt{lemma}、\texttt{proposition}、\texttt{corollary}、\texttt{example}、\texttt{remark}（带编号彩框）；\texttt{notebox}（无编号）；\texttt{codebox}（代码块）；\texttt{\textbackslash newcoloredtheorem}（新增一种）。
+
+\section{常见的坑}
+
+\begin{notebox}[gy]{编译失败先看这里}
+- \texttt{\textbackslash ll} 后按 \texttt{\textbackslash le} 看错误，红色 \texttt{!} 那行即出错位置。
+- 中文/特殊字符报错：要用 \texttt{xelatex}（模板默认已用），别用 \texttt{pdflatex}。
+- \texttt{\$} 或 \texttt{\{\}} 不配对：这是最常见的编译错误，数一下有没有闭合。
+- 图片找不到：确认文件在 \texttt{images/}，路径写对。
+- 引用显示 \texttt{??}：没编两遍，多按几次 \texttt{\textbackslash ll}。
 \end{notebox}
+
+\section{小结}
+
+文字直接打、要样式用命令；公式用 \texttt{\$} 或 \texttt{equation}；图优先 TikZ、要插图用 \texttt{includegraphics}；知识块只填内容（样式在 preamble 配好）；代码用 \texttt{codebox}；新章节复制文件加 \texttt{\textbackslash include}。出错先看 \texttt{\textbackslash le}。

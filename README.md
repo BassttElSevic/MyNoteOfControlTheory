@@ -44,7 +44,7 @@ MyNoteOfControlTheory/
 \end{codebox}
 ```
 
-语言支持 `bash/tex/latex/text/c/python/matlab` 等（`latex`/`tex`、`sh`/`bash` 互为别名）。
+语言支持 `bash/tex/latex/text/c/python/matlab` 等（`latex` 与 `tex` 为别名）。
 
 ### 插图
 

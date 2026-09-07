@@ -144,11 +144,7 @@
   identifierstyle=\color{black},
   numberstyle=\color{nm}\small,      % 行号加大
   numbers=left, numbersep=8pt,
-  breaklines=true, breakatwhitespace=false,
-  columns=fullflexible, keepspaces=true,
-  showstringspaces=false, tabsize=2,
-  extendedchars=true, frame=none,
-  xleftmargin=2pt, xrightmargin=2pt,
+  showstringspaces=false, tabsize=2, frame=none,
 }
 % listings 不带内置的 latex 语言，自定义一个；常见命令可高亮
 \lstdefinelanguage{latex}{%
@@ -159,12 +155,13 @@
   sensitive=true,
 }
 \lstalias{tex}{latex}
-\lstalias{sh}{bash}
+% 注意：不要写 \lstalias{sh}{bash}，它会触发 listings 的 \lstKV@OptArg 无限递归（栈溢出）。
+% 想用 shell 就写 language=bash 即可。
 % 无高亮的纯文本（目录/说明用），避免把 ​# 当注释导致解析问题
 \lstdefinelanguage{text}{sensitive=true}
 \newtcblisting{codebox}[2][bash]{%
   enhanced, breakable, listing only,
-  listing options={language=#1},
+  listing options={language=#1, breaklines=true},
   colback=codebg, colframe=codeframe, leftrule=3pt,
   colbacktitle=bl!80!black, coltitle=white, fonttitle=\bfseries,
   arc=0pt, boxrule=0.5pt,          % 直角，不要圆角
