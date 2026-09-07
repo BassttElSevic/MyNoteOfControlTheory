@@ -48,6 +48,9 @@ rubber.cache
 # latexrun
 latex.out/
 
+# vimtex 编译的辅助文件目录（对应 latex.lua 里的 aux_dir = "build"）
+build/
+
 ## Auxiliary and intermediate files from other packages:
 # algorithms
 *.alg

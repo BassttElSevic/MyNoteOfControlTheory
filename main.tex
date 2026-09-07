@@ -1,0 +1,59 @@
+% !TEX program = xelatex
+% ============================================================
+%   控制理论笔记 —— 主文档
+%
+%   编译：在 nvim 里对 main.tex 按 \ll（vimtex 连续编译，latexmk + XeLaTeX）
+%   输出布局（对应 ~/.config/nvim/lua/plugins/latex.lua）：
+%       辅助文件(.aux/.log/.toc/.synctex) → build/
+%       PDF(main.pdf)                     → 本目录（根目录）
+%       \lv 正向跳转看 PDF，zathura 反向跳转回源码
+%
+%   新增章节：chapters/ 下建 NN_名字.tex（首行 % !TEX root = ../main.tex），
+%             然后在下方正文区 \include 一行。
+% ============================================================
+
+\documentclass[a4paper, 11pt, fontset=none, oneside, openany]{ctexbook}
+
+% ---------- 导言区：整体风格（字体/配色/页面/框，见 preamble.tex） ----------
+\input{preamble}
+
+
+\begin{document}
+
+% ---------- 封面（左侧色条 + 右上色块 + 大标题） ----------
+\begin{titlepage}
+\begin{tikzpicture}[remember picture, overlay]
+  % 左竖条
+  \fill[coverblue] ([xshift=0pt]current page.north west) rectangle ([xshift=1.6cm]current page.south west);
+  % 右上两个小色块
+  \fill[coverlight] ([xshift=-2.6cm,yshift=-1.2cm]current page.north east) rectangle ([xshift=-1.6cm,yshift=-0.2cm]current page.north east);
+  \fill[coverblue] ([xshift=-1.6cm,yshift=-1.2cm]current page.north east) rectangle ([xshift=-0.6cm,yshift=-0.2cm]current page.north east);
+  % 文字：以页面左上角为原点，x=2.8cm，y 向下（yshift 为负）
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-6.2cm]current page.north west) {\color{covergray}\large 现代控制理论 \quad $\cdot$ \quad 个人学习笔记};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-7.4cm]current page.north west) {\color{covergray}\rule{5.5cm}{0.4pt}};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-10.8cm]current page.north west) {\color{coverblue}\fontsize{52}{60}\selectfont\bfseries\sffamily 控制理论};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-14.4cm]current page.north west) {\color{coverblue}\fontsize{52}{60}\selectfont\bfseries\sffamily 与状态空间};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-16.8cm]current page.north west) {\color{covergray}\rule{15.0cm}{0.6pt}};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-22.0cm]current page.north west) {\color{coverblue}\Large\bfseries\sffamily Basstt \quad 著};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-23.4cm]current page.north west) {\color{covergray}\normalsize\href{https://github.com/BassttElSevic}{github.com/BassttElSevic}};
+  \node[anchor=west] at ([xshift=2.8cm,yshift=-24.8cm]current page.north west) {\color{covergray}\normalsize\href{https://github.com/BassttElSevic/MyNoteOfControlTheory}{github.com/BassttElSevic/MyNoteOfControlTheory}};
+\end{tikzpicture}
+\end{titlepage}
+
+% ---------- 前言 ----------
+\frontmatter
+\tableofcontents
+
+% ---------- 正文 ----------
+\mainmatter
+% 教程章显示为「第零章」：把章节计数从 0 开始，下一章才是「第一章」
+\setcounter{chapter}{-1}
+\include{chapters/00_getting_started}
+% 新增章节就在上面加一行，例如：
+% \include{chapters/01_statespace}
+
+% ---------- 附录 ----------
+\appendix
+% \include{chapters/appendix}
+
+\end{document}
