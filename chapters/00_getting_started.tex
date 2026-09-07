@@ -546,10 +546,16 @@ C  c / python / matlab
   \item 在 \texttt{main.tex} 正文区加一行 \texttt{\textbackslash include\{chapters/NN\_名字\}}。
 \end{enumerate}
 
-\begin{codebox}[latex]{在 main.tex 里登记}
+注意 \texttt{main.tex} 里已经 \texttt{\textbackslash include} 了第零章，你新写的章节在它下面再加一行即可。
+
+% 注：下面 codebox 是「演示写法」，只示意新章节该加在哪一行。真正的
+% main.tex 里，第零章那一行（那行 include）已经在了，这里故意不写出来，
+% 否则 vimtex 会把教程里这段演示文字误判成「这个文件包含了它自己」而报
+% Recursive file inclusion。你写新章节时，照这行格式在 include 列表里加一行即可。
+
+\begin{codebox}[latex]{在 main.tex 里登记（示意新章节加在哪）}
 \mainmatter
-\include{chapters/00_getting_started}   % 已有
-\include{chapters/01_statespace}        % 新加
+\include{chapters/01_statespace}   % 你新加的这行
 \end{codebox}
 
 \textbf{章节顺序}由 \texttt{\textbackslash include} 的先后决定。
