@@ -24,13 +24,15 @@
 用 \texttt{codebox} 展示目录（长行会自动换行，不会溢出边框）：
 \begin{codebox}[text]{目录结构}
 MyNoteOfControlTheory/
-|-- main.tex        # 主文档：class + 封面 + \include 章节
-|-- preamble.tex    # 导言区：字体、配色、页面、知识块宏（整体风格）
-|-- chapters/       # 各章节 .tex
-|   `-- 00_getting_started.tex
-|-- build/          # 辅助文件（.aux/.log/.toc/.synctex）自动生成
-|-- main.pdf        # 编译产物，在根目录
-`-- .gitignore      # 忽略 LaTeX 辅助文件 + build/
+├── main.tex              # 主文档：class + 封面 + \include 章节
+├── preamble.tex          # 导言区：字体、配色、页面、知识块宏
+├── chapters/             # 各章节 .tex
+│   └── 00_getting_started.tex
+├── images/               # 外部图片
+├── build/                # 辅助文件（自动生成，已 gitignore）
+├── main.pdf              # 编译产物（在根目录）
+├── .gitignore
+└── README.md
 \end{codebox}
 
 \subsection{新增一个章节}
