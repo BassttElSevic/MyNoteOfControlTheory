@@ -683,6 +683,68 @@ rd=红   in=靛   pk=粉   gy=灰
 
 \texttt{definition}、\texttt{theorem}、\texttt{lemma}、\texttt{proposition}、\texttt{corollary}、\texttt{example}、\texttt{remark}（带编号彩框）；\texttt{notebox}（无编号）；\texttt{codebox}（代码块）；\texttt{\textbackslash newcoloredtheorem}（新增一种）。
 
+\section{用 git / lazygit 管理这份笔记}
+
+这份笔记本身是个 git 仓库，用来记录每次改动、能回退、能备份到 GitHub。你不需要记很多 git 命令，用 \texttt{lazygit} 这个图形化面板就够了。
+
+\subsection{nvim 里分两套工具}
+
+\begin{itemize}
+  \item \textbf{lazygit}：全屏操作台，负责\textbf{提交、看历史、切分支、同步远端}。在 nvim 里按 \texttt{\textless leader\textgreater gg} 打开。
+  \item \textbf{gitsigns}：行内视图，负责\textbf{看到哪几行改了、单块暂存/回滚、行内 blame}。它贴在编辑器行号旁，不用单独开面板。
+\end{itemize}
+
+\subsection{lazygit 的按键}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+按键 & 作用 & 说明 \\
+\midrule
+\texttt{\textless leader\textgreater gg} & 打开 git 面板 & 提交、看历史、分支都在这 \\
+\texttt{\textless leader\textgreater gf} & 当前文件所属仓库 & 定位到本文件所在的 git 项目 \\
+\texttt{\textless leader\textgreater gl} & 仓库提交历史 & 看所有提交 \\
+\texttt{\textless leader\textgreater gc} & 当前文件提交历史 & 只看这个文件改过啥 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{gitsigns 的按键（改动块）}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{lll}
+\toprule
+按键 & 作用 & 说明 \\
+\midrule
+\texttt{]h} / \texttt{[h} & 下一个/上一个改动块 & 跳到你改过的地方 \\
+\texttt{\textless leader\textgreater hs} & 暂存当前改动块 & 把这一段加进提交 \\
+\texttt{\textless leader\textgreater hr} & 回滚当前改动块 & 撤销这一段 \\
+\texttt{\textless leader\textgreater hS} & 暂存整个文件 & \\
+\texttt{\textless leader\textgreater hR} & 回滚整个文件 & \\
+\texttt{\textless leader\textgreater hp} & 预览改动块 & \\
+\texttt{\textless leader\textgreater hb} & 当前行 blame & 看这行谁改的 \\
+\texttt{\textless leader\textgreater ht} & 开关行内 blame & \\
+\texttt{\textless leader\textgreater hd} & 与索引对比 & \\
+\texttt{\textless leader\textgreater hD} & 与上次提交对比 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{日常提交流程}
+
+\begin{enumerate}
+  \item 写完 \texttt{.tex}，按 \texttt{\textbackslash ll} 编译，确认没报错、PDF 正常。
+  \item 按 \texttt{\textless leader\textgreater gg} 打开 lazygit，看改动列表。
+  \item 在 lazygit 里：回车看差异 → 空格暂存 → \texttt{c} 输入提交信息 → 回车提交。
+  \item 需要备份到 GitHub 时，在 lazygit 里按 \texttt{P}（push）推上去。
+\end{enumerate}
+
+\begin{notebox}[tl]{记住}
+这套模板每改一次就编译一次、看一次效果，攒够一个「有意义」的改动（比如新写了一节）就提交一次。提交信息写清楚改了什么，方便以后查历史。
+\end{notebox}
+
 \section{常见的坑}
 
 \begin{notebox}[gy]{编译失败先看这里}
